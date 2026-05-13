@@ -12,7 +12,7 @@
 | Frontend | Vue 3 (Composition API), Vuetify 3, Vite |
 | Autentifikatsiya | Laravel Sanctum (token-based) |
 | Word generatsiya | phpoffice/phpword |
-| AI | Google Gemini 1.5 Flash (grammatika tuzatish) |
+| AI | Google Gemini 2.0 Flash (grammatika tuzatish) |
 | Server | Nginx + PHP-FPM |
 | Container | Docker + Docker Compose |
 
@@ -82,11 +82,14 @@ APP_URL=http://hujjat.urtg.uz
 ### 3. Konteynerlarni qurish va ishga tushurish
 
 ```bash
+# Birinchi marta — hammasini build qilib ishga tushirish
 docker compose up -d --build
 
-# Birinchi marta: ma'lumotlar bazasini sozlash
-docker compose run --rm migrate
+# Birinchi marta — migration va seeder
+docker compose exec php php artisan migrate --force
+docker compose exec php php artisan db:seed --force
 
+# Loglarni kuzatish
 docker compose logs -f
 ```
 
@@ -156,6 +159,12 @@ docker compose exec php php artisan config:clear
 
 # Qayta qurish (kod yangilangandan so'ng)
 docker compose up -d --build nginx php
+
+# Faqat frontend o'zgarganda
+docker compose up -d --build nginx
+
+# Faqat backend o'zgarganda
+docker compose up -d --build php
 ```
 
 ---
