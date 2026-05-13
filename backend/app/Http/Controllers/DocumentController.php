@@ -129,7 +129,7 @@ class DocumentController extends Controller
                 . "Faqat tuzatilgan matnni qaytargin, boshqa hech narsani yozma.\n\nMatn: {$text}";
 
             $response = Http::timeout(15)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$key}",
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$key}",
                 ['contents' => [['parts' => [['text' => $prompt]]]]]
             );
 

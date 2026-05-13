@@ -22,7 +22,13 @@
       "Bash(curl -s -X POST http://localhost:8000/api/admin/departments -H 'Content-Type: application/json' -d '{\"name\":\"Unauthorized\"}' -w '\\\\nHTTP Status: %{http_code}')",
       "Bash(curl -s -X POST http://localhost:8000/api/admin/departments -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Unauthorized\"}' -w '\\\\nHTTP Status: %{http_code}')",
       "Bash(chmod +x /home/eversoft/Projects/hujjat.urtg.uz/docker/entrypoint.sh)",
-      "Bash(docker compose *)"
+      "Bash(docker compose *)",
+      "Bash(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBgRJNoAtf1sQMQHnGRO4uwOVUqf32iS_Y -H 'Content-Type: application/json' -d '{\"contents\":[{\"parts\":[{\"text\":\"Quyidagi o'\\\\''zbek tilidagi rasmiy hujjat matnini FAQAT grammatik va imlo xatolarini tuzat. Matnning ma'\\\\''nosini, tuzilishini, so'\\\\''z tartibini O'\\\\''ZGARTIRMA. Faqat tuzatilgan matnni qaytargin, boshqa hech narsani yozma.\\\\n\\\\nMatn: Sizga murojat qilmoqchiman bu masala haqinda\"}]}]}')",
+      "Bash(curl -s \"https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyBgRJNoAtf1sQMQHnGRO4uwOVUqf32iS_Y\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(m['name']\\) for m in data.get\\('models',[]\\)]\")",
+      "Bash(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBgRJNoAtf1sQMQHnGRO4uwOVUqf32iS_Y -H 'Content-Type: application/json' -d '{\"contents\":[{\"parts\":[{\"text\":\"Quyidagi o'\\\\''zbek tilidagi rasmiy hujjat matnini FAQAT grammatik va imlo xatolarini tuzat. Matnning ma'\\\\''nosini, tuzilishini, so'\\\\''z tartibini O'\\\\''ZGARTIRMA. Faqat tuzatilgan matnni qaytargin, boshqa hech narsani yozma.\\\\n\\\\nMatn: Sizga murojat qilmoqchiman bu masala haqinda\"}]}]}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d['candidates'][0]['content']['parts'][0]['text']\\)\")",
+      "Bash(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=AIzaSyBgRJNoAtf1sQMQHnGRO4uwOVUqf32iS_Y -H 'Content-Type: application/json' -d '{\"contents\":[{\"parts\":[{\"text\":\"Quyidagi o'\\\\''zbek tilidagi rasmiy hujjat matnini FAQAT grammatik va imlo xatolarini tuzat. Matnning ma'\\\\''nosini O'\\\\''ZGARTIRMA. Faqat tuzatilgan matnni qaytargin.\\\\n\\\\nMatn: Sizga murojat qilmoqchiman bu masala haqinda\"}]}]}')"
     ]
   }
 }
