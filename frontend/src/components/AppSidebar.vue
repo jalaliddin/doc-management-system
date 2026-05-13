@@ -18,6 +18,7 @@ const adminNavItems = [
   { label: 'Bo\'limlar', icon: 'mdi-office-building', to: '/admin/departments' },
   { label: 'Tashkilotlar', icon: 'mdi-domain', to: '/admin/organizations' },
   { label: 'Imzolovchilar', icon: 'mdi-pen', to: '/admin/signatories' },
+  { label: 'Shablonlar', icon: 'mdi-file-word-outline', to: '/admin/templates' },
 ]
 
 async function handleLogout() {

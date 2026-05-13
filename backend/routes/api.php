@@ -5,6 +5,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\SignatoryController;
+use App\Http\Controllers\TemplateController;
 use Illuminate\Support\Facades\Route;
 
 // ===== Ochiq endpointlar =====
@@ -17,6 +18,7 @@ Route::get('/organizations/{organization}/leaders', [OrganizationController::cla
 
 Route::get('/signatories', [SignatoryController::class, 'index']);
 
+Route::get('/templates', [TemplateController::class, 'index']);
 Route::post('/documents/generate', [DocumentController::class, 'generate']);
 
 // ===== Admin Auth =====
@@ -46,4 +48,9 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/signatories', [SignatoryController::class, 'store']);
     Route::put('/signatories/{signatory}', [SignatoryController::class, 'update']);
     Route::delete('/signatories/{signatory}', [SignatoryController::class, 'destroy']);
+
+    // Templates CRUD
+    Route::post('/templates', [TemplateController::class, 'store']);
+    Route::post('/templates/{template}/activate', [TemplateController::class, 'activate']);
+    Route::delete('/templates/{template}', [TemplateController::class, 'destroy']);
 });

@@ -41,6 +41,12 @@ const routes = [
     component: () => import('@/views/admin/SignatoryManager.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/admin/templates',
+    name: 'AdminTemplates',
+    component: () => import('@/views/admin/TemplateManager.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
 
 const router = createRouter({
