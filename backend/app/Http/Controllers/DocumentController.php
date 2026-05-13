@@ -74,18 +74,12 @@ class DocumentController extends Controller
         }
 
         // Qabul qiluvchi ma'lumotlari
-        if ($leader) {
-            $recipientPosition = $leader->position;
-            $recipientName     = $this->abbreviateName($leader->full_name);
-            $greeting          = 'Hurmatli, ' . $this->getGreetingName($leader->full_name) . '!';
-        } else {
-            $recipientPosition = $data['recipient_position'] ?? '';
-            $recipientFullName = $data['recipient_name'] ?? '';
-            $recipientName     = $recipientFullName ? $this->abbreviateName($recipientFullName) : '';
-            $greeting          = $recipientFullName
-                ? 'Hurmatli, ' . $this->getGreetingName($recipientFullName) . '!'
-                : '';
-        }
+        $recipientPosition = $leader?->position ?? '';
+        $recipientName     = $leader ? $this->abbreviateName($leader->full_name) : '';
+        // Greeting faqat yuqori turuvchi tashkilotlarda
+        $greeting = ($leader && $organization->type === 'yuqori')
+            ? 'Hurmatli, ' . $this->getGreetingName($leader->full_name) . '!'
+            : '';
 
         // Qo'lda yoziladigan blok
         $manualFullName = $data['manual_name'] ?? '';

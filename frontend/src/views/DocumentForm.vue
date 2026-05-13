@@ -14,15 +14,13 @@ const signatories   = ref([])
 const leaders       = ref([])
 const templates     = ref([])
 
-const orgType           = ref('yuqori')
-const orgId             = ref(null)
-const leaderId          = ref(null)
-const recipientPosition = ref('')
-const recipientName     = ref('')
-const signatoryId       = ref(null)
-const templateId        = ref(null)
-const docDate           = ref(new Date().toISOString().split('T')[0])
-const textContent       = ref('')
+const orgType     = ref('yuqori')
+const orgId       = ref(null)
+const leaderId    = ref(null)
+const signatoryId = ref(null)
+const templateId  = ref(null)
+const docDate     = ref(new Date().toISOString().split('T')[0])
+const textContent = ref('')
 
 const manualOrg      = ref('')
 const manualPosition = ref('')
@@ -35,22 +33,18 @@ const snackbarText  = ref('')
 const snackbarColor = ref('error')
 const formRef       = ref(null)
 
-const showLeaderDropdown  = computed(() => orgType.value === 'yuqori')
-const showManualRecipient = computed(() => orgType.value === 'quyi' || orgType.value === 'boshqa')
-const filteredOrgs        = computed(() => organizations.value.filter(o => o.type === orgType.value))
+const filteredOrgs = computed(() => organizations.value.filter(o => o.type === orgType.value))
 
 watch(orgType, () => {
   orgId.value = null
   leaderId.value = null
   leaders.value = []
-  recipientPosition.value = ''
-  recipientName.value = ''
 })
 
 watch(orgId, async (val) => {
   leaderId.value = null
   leaders.value = []
-  if (val && orgType.value === 'yuqori') {
+  if (val) {
     const res = await api.get(`/organizations/${val}/leaders`)
     leaders.value = res.data
     if (leaders.value.length === 1) leaderId.value = leaders.value[0].id
@@ -101,8 +95,6 @@ async function generateDocument() {
       department_id:          Number(deptId.value),
       organization_id:        orgId.value,
       organization_leader_id: leaderId.value || null,
-      recipient_position:     recipientPosition.value || null,
-      recipient_name:         recipientName.value || null,
       signatory_id:           signatoryId.value,
       template_id:            templateId.value || null,
       document_date:          docDate.value,
@@ -188,8 +180,8 @@ const req = v => !!v || 'Majburiy maydon'
                 :rules="[req]" />
             </div>
 
-            <!-- Yuqori turuvchi: rahbar dropdown -->
-            <div v-if="showLeaderDropdown" class="form-section">
+            <!-- Barcha tashkilot turlarida rahbar dropdown -->
+            <div class="form-section">
               <div class="form-section-title">3. Qabul qiluvchi rahbar</div>
               <v-select v-model="leaderId" :items="leaders"
                 :item-title="i => `${i.position} — ${i.full_name}`"
@@ -197,21 +189,6 @@ const req = v => !!v || 'Majburiy maydon'
                 :rules="[req]" :disabled="!orgId"
                 :no-data-text="orgId ? 'Rahbar topilmadi' : 'Avval tashkilotni tanlang'" />
             </div>
-
-            <!-- Quyi / Boshqa: qo'lda kiritish -->
-            <template v-if="showManualRecipient">
-              <div class="form-section">
-                <div class="form-section-title">3. Qabul qiluvchi rahbar</div>
-                <v-text-field v-model="recipientPosition"
-                  label="Lavozimi" variant="outlined" density="comfortable"
-                  class="mb-3" :rules="[req]" />
-                <v-text-field v-model="recipientName"
-                  label="F.I.Sh. (Hamidov Akmal Anvarovich)"
-                  variant="outlined" density="comfortable"
-                  hint="Familiya Ism Otasining-ismi tartibida — avtomatik qisqartiriladi"
-                  persistent-hint :rules="[req]" />
-              </div>
-            </template>
           </div>
 
           <!-- Imzolovchi va sana -->
