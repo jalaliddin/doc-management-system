@@ -26,15 +26,15 @@ services:
     restart: unless-stopped
     env_file: .env.docker
     volumes:
-      - ./backend:/var/www/html
-      - vendor_cache:/var/www/html/vendor
+      - storage_logs:/var/www/html/storage/logs
+      - storage_app:/var/www/html/storage/app
     depends_on:
       db:
         condition: service_healthy
     networks:
       - urtg_network
     healthcheck:
-      test: ["CMD-SHELL", "php -r 'echo 1;' 2>/dev/null && echo ok"]
+      test: ["CMD-SHELL", "php -r 'echo 1;'"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -63,7 +63,7 @@ services:
       --collation-server=utf8mb4_unicode_ci
       --default-authentication-plugin=mysql_native_password
 
-  # ===== Bir martalik: migrate + seed (docker compose up migrate) =====
+  # ===== Bir martalik: migrate + seed =====
   migrate:
     build:
       context: ./backend
@@ -71,9 +71,6 @@ services:
     container_name: urtg_migrate
     restart: "no"
     env_file: .env.docker
-    volumes:
-      - ./backend:/var/www/html
-      - vendor_cache:/var/www/html/vendor
     depends_on:
       db:
         condition: service_healthy
@@ -81,22 +78,17 @@ services:
       - urtg_network
     entrypoint: >
       sh -c "
-        echo 'Migratsiyalar bajarilmoqda...' &&
         php artisan migrate --force &&
-        echo 'Seeder ishga tushirilmoqda...' &&
         php artisan db:seed --force &&
-        echo 'Cache tozalanmoqda...' &&
         php artisan config:cache &&
         php artisan route:cache &&
-        php artisan view:cache &&
-        echo 'Tayyor!'
+        php artisan view:cache
       "
 
 volumes:
   mysql_data:
-    driver: local
-  vendor_cache:
-    driver: local
+  storage_logs:
+  storage_app:
 
 networks:
   urtg_network:
