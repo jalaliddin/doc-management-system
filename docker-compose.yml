@@ -1,0 +1,103 @@
+services:
+
+  # ===== Nginx: frontend (Vue SPA) + /api proxy to PHP-FPM =====
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: urtg_nginx
+    restart: unless-stopped
+    ports:
+      - "8093:80"
+    volumes:
+      - ./docker/nginx/app.conf:/etc/nginx/conf.d/app.conf:ro
+    depends_on:
+      php:
+        condition: service_healthy
+    networks:
+      - urtg_network
+
+  # ===== PHP-FPM: Laravel backend =====
+  php:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: urtg_php
+    restart: unless-stopped
+    env_file: .env.docker
+    volumes:
+      - ./backend:/var/www/html
+      - vendor_cache:/var/www/html/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - urtg_network
+    healthcheck:
+      test: ["CMD-SHELL", "php -r 'echo 1;' 2>/dev/null && echo ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ===== MySQL 8.0 =====
+  db:
+    image: mysql:8.0
+    container_name: urtg_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: urganchtransgaz_docs
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - urtg_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+
+  # ===== Bir martalik: migrate + seed (docker compose up migrate) =====
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: urtg_migrate
+    restart: "no"
+    env_file: .env.docker
+    volumes:
+      - ./backend:/var/www/html
+      - vendor_cache:/var/www/html/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - urtg_network
+    entrypoint: >
+      sh -c "
+        echo 'Migratsiyalar bajarilmoqda...' &&
+        php artisan migrate --force &&
+        echo 'Seeder ishga tushirilmoqda...' &&
+        php artisan db:seed --force &&
+        echo 'Cache tozalanmoqda...' &&
+        php artisan config:cache &&
+        php artisan route:cache &&
+        php artisan view:cache &&
+        echo 'Tayyor!'
+      "
+
+volumes:
+  mysql_data:
+    driver: local
+  vendor_cache:
+    driver: local
+
+networks:
+  urtg_network:
+    driver: bridge

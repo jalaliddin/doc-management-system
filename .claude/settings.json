@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php --version)",
+      "Bash(composer --version)",
+      "Bash(npm --version)",
+      "Bash(mysql --version)",
+      "Bash(mysql -u root -proot -e \"CREATE DATABASE IF NOT EXISTS urganchtransgaz_docs CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(composer require *)",
+      "Bash(php artisan *)",
+      "Bash(curl -s http://localhost:8000/api/departments)",
+      "Bash(curl -s -X POST http://localhost:8000/api/admin/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"Admin@2024\"}')",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s \"http://localhost:8000/api/organizations?type=yuqori\")",
+      "Bash(curl -s http://localhost:8000/api/signatories)",
+      "Bash(curl -s -X POST http://localhost:8000/api/documents/generate -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(curl -s -X POST http://localhost:8000/api/admin/departments -H 'Content-Type: application/json' -d '{\"name\":\"Unauthorized\"}')",
+      "Bash(curl -s -X POST http://localhost:8000/api/admin/departments -H 'Content-Type: application/json' -d '{\"name\":\"Unauthorized\"}' -w '\\\\nHTTP Status: %{http_code}')",
+      "Bash(curl -s -X POST http://localhost:8000/api/admin/departments -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Unauthorized\"}' -w '\\\\nHTTP Status: %{http_code}')",
+      "Bash(chmod +x /home/eversoft/Projects/hujjat.urtg.uz/docker/entrypoint.sh)"
+    ]
+  }
+}

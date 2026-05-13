@@ -1,0 +1,150 @@
+### Urganchtransgaz API — Test fayli
+### VS Code: REST Client extension kerak
+
+@baseUrl = http://localhost:8000/api
+@adminToken = {{login.response.body.token}}
+
+### ============= Ochiq API =============
+
+### 1. Barcha bo'limlar
+GET {{baseUrl}}/departments
+Accept: application/json
+
+###
+
+### 2. Bitta bo'lim
+GET {{baseUrl}}/departments/1
+Accept: application/json
+
+###
+
+### 3. Barcha tashkilotlar
+GET {{baseUrl}}/organizations
+Accept: application/json
+
+###
+
+### 4. Yuqori turuvchi tashkilotlar
+GET {{baseUrl}}/organizations?type=yuqori
+Accept: application/json
+
+###
+
+### 5. Tashkilot rahbarlari
+GET {{baseUrl}}/organizations/1/leaders
+Accept: application/json
+
+###
+
+### 6. Imzolovchilar
+GET {{baseUrl}}/signatories
+Accept: application/json
+
+###
+
+### 7. Word hujjat generatsiya
+POST {{baseUrl}}/documents/generate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "department_id": 8,
+  "organization_id": 1,
+  "organization_leader_id": 1,
+  "signatory_id": 1,
+  "document_number": "125",
+  "document_date": "2026-05-13",
+  "text_content": "Ushbu hujjat test uchun yaratilmoqda. Barcha ma'lumotlar to'g'ri ko'rsatilishi zarur."
+}
+
+###
+
+### ============= Admin API =============
+
+### 8. Admin login
+# @name login
+POST {{baseUrl}}/admin/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "admin",
+  "password": "Admin@2024"
+}
+
+###
+
+### 9. Admin logout
+POST {{baseUrl}}/admin/logout
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### 10. Bo'lim qo'shish
+POST {{baseUrl}}/admin/departments
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Yangi bo'lim",
+  "index_code": "НБ/",
+  "head_name": "Rahbar FISH",
+  "head_phone": "2-99"
+}
+
+###
+
+### 11. Bo'lim tahrirlash
+PUT {{baseUrl}}/admin/departments/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Yangilangan bo'lim",
+  "index_code": "ИШ/",
+  "head_name": "Yangi Rahbar",
+  "head_phone": "2-34"
+}
+
+###
+
+### 12. Tashkilot qo'shish
+POST {{baseUrl}}/admin/organizations
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Yangi tashkilot",
+  "type": "quyi"
+}
+
+###
+
+### 13. Tashkilot rahbari qo'shish
+POST {{baseUrl}}/admin/organizations/1/leaders
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "position": "Direktor",
+  "full_name": "Rahbar FISH"
+}
+
+###
+
+### 14. Imzolovchi qo'shish
+POST {{baseUrl}}/admin/signatories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "position": "Bosh buxgalter",
+  "full_name": "Xoliqova Maftuna Xasan qizi",
+  "is_active": true
+}
