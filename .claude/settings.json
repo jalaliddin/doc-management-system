@@ -28,7 +28,23 @@
       "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(m['name']\\) for m in data.get\\('models',[]\\)]\")",
       "Bash(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBgRJNoAtf1sQMQHnGRO4uwOVUqf32iS_Y -H 'Content-Type: application/json' -d '{\"contents\":[{\"parts\":[{\"text\":\"Quyidagi o'\\\\''zbek tilidagi rasmiy hujjat matnini FAQAT grammatik va imlo xatolarini tuzat. Matnning ma'\\\\''nosini, tuzilishini, so'\\\\''z tartibini O'\\\\''ZGARTIRMA. Faqat tuzatilgan matnni qaytargin, boshqa hech narsani yozma.\\\\n\\\\nMatn: Sizga murojat qilmoqchiman bu masala haqinda\"}]}]}')",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d['candidates'][0]['content']['parts'][0]['text']\\)\")",
-      "Bash(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=AIzaSyBgRJNoAtf1sQMQHnGRO4uwOVUqf32iS_Y -H 'Content-Type: application/json' -d '{\"contents\":[{\"parts\":[{\"text\":\"Quyidagi o'\\\\''zbek tilidagi rasmiy hujjat matnini FAQAT grammatik va imlo xatolarini tuzat. Matnning ma'\\\\''nosini O'\\\\''ZGARTIRMA. Faqat tuzatilgan matnni qaytargin.\\\\n\\\\nMatn: Sizga murojat qilmoqchiman bu masala haqinda\"}]}]}')"
+      "Bash(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=AIzaSyBgRJNoAtf1sQMQHnGRO4uwOVUqf32iS_Y -H 'Content-Type: application/json' -d '{\"contents\":[{\"parts\":[{\"text\":\"Quyidagi o'\\\\''zbek tilidagi rasmiy hujjat matnini FAQAT grammatik va imlo xatolarini tuzat. Matnning ma'\\\\''nosini O'\\\\''ZGARTIRMA. Faqat tuzatilgan matnni qaytargin.\\\\n\\\\nMatn: Sizga murojat qilmoqchiman bu masala haqinda\"}]}]}')",
+      "Bash(curl -s http://localhost:8093/api/templates)",
+      "Read(//etc/nginx/**)",
+      "Bash(nginx -t)",
+      "Bash(systemctl status *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://hujjat.urtg.uz/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://10.100.90.14:8093/)",
+      "Bash(dig hujjat.urtg.uz +short)",
+      "Bash(nslookup hujjat.urtg.uz)",
+      "Bash(docker exec *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -H \"Host: hujjat.urtg.uz\" http://127.0.0.1/api/templates)",
+      "Bash(docker port *)",
+      "Bash(netstat -tlnp)",
+      "Bash(apt list *)",
+      "Bash(sudo apt-get install -y nginx)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:8093/api/templates)"
     ]
   }
 }

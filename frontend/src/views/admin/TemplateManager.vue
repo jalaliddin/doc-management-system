@@ -20,17 +20,20 @@ const snackbarText  = ref('')
 const snackbarColor = ref('success')
 
 const placeholders = [
-  { key: '${DOC_NUMBER}',         desc: 'Hujjat raqami (masalan: АТ/125)' },
-  { key: '${DATE}',               desc: 'Sana (masalan: 13 may 2026 yil)' },
-  { key: '${RECIPIENT_ORG}',      desc: 'Tashkilot nomi' },
-  { key: '${RECIPIENT_POSITION}', desc: 'Rahbar lavozimi (yuqori turuvchida)' },
-  { key: '${RECIPIENT_NAME}',     desc: 'Rahbar FISH (yuqori turuvchida)' },
-  { key: '${GREETING}',           desc: 'Hurmatli, [FISH]! (yuqori turuvchida)' },
+  { key: '${DOC_NUMBER}',         desc: 'Hujjat indeksi (masalan: АТ/)' },
+  { key: '${DATE}',               desc: 'Sana (masalan: 13.05.2026-yil)' },
+  { key: '${RECIPIENT_ORG}',      desc: 'Tashkilot nomi (to\'liq)' },
+  { key: '${RECIPIENT_POSITION}', desc: 'Qabul qiluvchi lavozimi' },
+  { key: '${RECIPIENT_NAME}',     desc: 'Qabul qiluvchi qisqartma (A.A. Familiya)' },
+  { key: '${GREETING}',           desc: 'Hurmatli, Ism Otasining-ismi!' },
   { key: '${SIGNATORY_POSITION}', desc: 'Imzolovchi lavozimi' },
   { key: '${SIGNATORY_NAME}',     desc: 'Imzolovchi FISH' },
   { key: '${EXECUTOR_NAME}',      desc: 'Ijrochi (bo\'lim rahbari FISH)' },
   { key: '${EXECUTOR_PHONE}',     desc: 'Ichki telefon' },
   { key: '${TEXT}',               desc: 'Hujjat asosiy matni' },
+  { key: '${MANUAL_ORG}',         desc: 'Qo\'lda: boshqarma nomi' },
+  { key: '${MANUAL_POSITION}',    desc: 'Qo\'lda: rahbar lavozimi' },
+  { key: '${MANUAL_NAME}',        desc: 'Qo\'lda: rahbar qisqartma (A.A. Familiya)' },
 ]
 
 onMounted(fetchTemplates)

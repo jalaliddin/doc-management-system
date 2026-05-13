@@ -8,33 +8,44 @@ const route = useRoute()
 const router = useRouter()
 const deptId = computed(() => route.params.id)
 
-const department   = ref(null)
+const department    = ref(null)
 const organizations = ref([])
-const signatories  = ref([])
-const leaders      = ref([])
-const templates    = ref([])
+const signatories   = ref([])
+const leaders       = ref([])
+const templates     = ref([])
 
-const orgType      = ref('yuqori')
-const orgId        = ref(null)
-const leaderId     = ref(null)
-const signatoryId  = ref(null)
-const templateId   = ref(null)
-const docNumber    = ref('')
-const docDate      = ref(new Date().toISOString().split('T')[0])
-const textContent  = ref('')
+const orgType           = ref('yuqori')
+const orgId             = ref(null)
+const leaderId          = ref(null)
+const recipientPosition = ref('')
+const recipientName     = ref('')
+const signatoryId       = ref(null)
+const templateId        = ref(null)
+const docDate           = ref(new Date().toISOString().split('T')[0])
+const textContent       = ref('')
 
-const loading     = ref(false)
-const pageLoading = ref(true)
-const snackbar    = ref(false)
+const manualOrg      = ref('')
+const manualPosition = ref('')
+const manualName     = ref('')
+
+const loading       = ref(false)
+const pageLoading   = ref(true)
+const snackbar      = ref(false)
 const snackbarText  = ref('')
 const snackbarColor = ref('error')
-const formRef     = ref(null)
+const formRef       = ref(null)
 
-const showLeaderField = computed(() => orgType.value === 'yuqori')
-const filteredOrgs    = computed(() => organizations.value.filter(o => o.type === orgType.value))
-const activeTemplate  = computed(() => templates.value.find(t => t.is_active) || templates.value[0])
+const showLeaderDropdown  = computed(() => orgType.value === 'yuqori')
+const showManualRecipient = computed(() => orgType.value === 'quyi' || orgType.value === 'boshqa')
+const filteredOrgs        = computed(() => organizations.value.filter(o => o.type === orgType.value))
 
-watch(orgType, () => { orgId.value = null; leaderId.value = null; leaders.value = [] })
+watch(orgType, () => {
+  orgId.value = null
+  leaderId.value = null
+  leaders.value = []
+  recipientPosition.value = ''
+  recipientName.value = ''
+})
 
 watch(orgId, async (val) => {
   leaderId.value = null
@@ -54,10 +65,10 @@ onMounted(async () => {
       api.get('/signatories'),
       api.get('/templates'),
     ])
-    department.value   = deptRes.data
+    department.value    = deptRes.data
     organizations.value = orgRes.data
-    signatories.value  = sigRes.data.filter(s => s.is_active)
-    templates.value    = tplRes.data
+    signatories.value   = sigRes.data.filter(s => s.is_active)
+    templates.value     = tplRes.data
     if (signatories.value.length === 1) signatoryId.value = signatories.value[0].id
     const active = tplRes.data.find(t => t.is_active)
     if (active) templateId.value = active.id
@@ -90,11 +101,15 @@ async function generateDocument() {
       department_id:          Number(deptId.value),
       organization_id:        orgId.value,
       organization_leader_id: leaderId.value || null,
+      recipient_position:     recipientPosition.value || null,
+      recipient_name:         recipientName.value || null,
       signatory_id:           signatoryId.value,
       template_id:            templateId.value || null,
-      document_number:        docNumber.value,
       document_date:          docDate.value,
       text_content:           textContent.value,
+      manual_org:             manualOrg.value || null,
+      manual_position:        manualPosition.value || null,
+      manual_name:            manualName.value || null,
     }, { responseType: 'blob' })
 
     const cd = response.headers['content-disposition'] || ''
@@ -121,7 +136,6 @@ const orgTypeOptions = [
   { value: 'boshqa', label: 'Boshqa tashkilotlar' },
 ]
 const req = v => !!v || 'Majburiy maydon'
-const reqNum = v => (!!v && String(v).trim() !== '') || 'Raqam kiritilishi shart'
 </script>
 
 <template>
@@ -143,12 +157,11 @@ const reqNum = v => (!!v && String(v).trim() !== '') || 'Raqam kiritilishi shart
 
       <div class="page-body" style="max-width:760px;">
 
-        <!-- Shablon yo'q xabari -->
         <v-alert
           v-if="!pageLoading && templates.length === 0"
           type="warning" variant="tonal" style="margin-bottom:16px;border-radius:10px;"
         >
-          Shablon yuklanmagan. Admin panelda <strong>Shablon</strong> bo'limiga o'ting.
+          Shablon yuklanmagan. Admin panelda <strong>Shablonlar</strong> bo'limiga o'ting.
         </v-alert>
 
         <div v-if="pageLoading" style="display:flex;justify-content:center;padding:60px;">
@@ -157,7 +170,7 @@ const reqNum = v => (!!v && String(v).trim() !== '') || 'Raqam kiritilishi shart
 
         <v-form v-else ref="formRef" @submit.prevent="generateDocument">
 
-          <!-- Tashkilot turi -->
+          <!-- 1. Tashkilot turi va rahbar -->
           <div class="form-card" style="margin-bottom:14px;">
             <div class="form-section">
               <div class="form-section-title">1. Tashkilot turi</div>
@@ -175,7 +188,8 @@ const reqNum = v => (!!v && String(v).trim() !== '') || 'Raqam kiritilishi shart
                 :rules="[req]" />
             </div>
 
-            <div v-if="showLeaderField" class="form-section">
+            <!-- Yuqori turuvchi: rahbar dropdown -->
+            <div v-if="showLeaderDropdown" class="form-section">
               <div class="form-section-title">3. Qabul qiluvchi rahbar</div>
               <v-select v-model="leaderId" :items="leaders"
                 :item-title="i => `${i.position} — ${i.full_name}`"
@@ -183,12 +197,27 @@ const reqNum = v => (!!v && String(v).trim() !== '') || 'Raqam kiritilishi shart
                 :rules="[req]" :disabled="!orgId"
                 :no-data-text="orgId ? 'Rahbar topilmadi' : 'Avval tashkilotni tanlang'" />
             </div>
+
+            <!-- Quyi / Boshqa: qo'lda kiritish -->
+            <template v-if="showManualRecipient">
+              <div class="form-section">
+                <div class="form-section-title">3. Qabul qiluvchi rahbar</div>
+                <v-text-field v-model="recipientPosition"
+                  label="Lavozimi" variant="outlined" density="comfortable"
+                  class="mb-3" :rules="[req]" />
+                <v-text-field v-model="recipientName"
+                  label="F.I.Sh. (Hamidov Akmal Anvarovich)"
+                  variant="outlined" density="comfortable"
+                  hint="Familiya Ism Otasining-ismi tartibida — avtomatik qisqartiriladi"
+                  persistent-hint :rules="[req]" />
+              </div>
+            </template>
           </div>
 
-          <!-- Imzolovchi, raqam, sana -->
+          <!-- Imzolovchi va sana -->
           <div class="form-card" style="margin-bottom:14px;">
             <div class="form-section">
-              <div class="form-section-title">{{ showLeaderField ? '4' : '3' }}. Imzolovchi</div>
+              <div class="form-section-title">4. Imzolovchi</div>
               <v-select v-model="signatoryId" :items="signatories"
                 :item-title="i => `${i.position} — ${i.full_name}`"
                 item-value="id" label="Imzolovchi" variant="outlined" density="comfortable"
@@ -196,27 +225,17 @@ const reqNum = v => (!!v && String(v).trim() !== '') || 'Raqam kiritilishi shart
             </div>
 
             <div class="form-section">
-              <div class="form-section-title">{{ showLeaderField ? '5' : '4' }}. Raqam va sana</div>
-              <v-row>
-                <v-col cols="12" sm="5">
-                  <v-text-field v-model="docNumber"
-                    :label="`Raqam (${department?.index_code || ''}...)`"
-                    variant="outlined" density="comfortable" :rules="[reqNum]"
-                    :hint="`To'liq: ${department?.index_code || ''}${docNumber || '...'}`"
-                    persistent-hint />
-                </v-col>
-                <v-col cols="12" sm="7">
-                  <v-text-field v-model="docDate" label="Sana" type="date"
-                    variant="outlined" density="comfortable" :rules="[req]" />
-                </v-col>
-              </v-row>
+              <div class="form-section-title">5. Sana</div>
+              <v-text-field v-model="docDate" label="Sana" type="date"
+                variant="outlined" density="comfortable" :rules="[req]"
+                style="max-width:280px;" />
             </div>
           </div>
 
           <!-- Shablon tanlash (birdan ko'p bo'lsa) -->
           <div v-if="templates.length > 1" class="form-card" style="margin-bottom:14px;">
             <div class="form-section">
-              <div class="form-section-title">{{ showLeaderField ? '6' : '5' }}. Shablon</div>
+              <div class="form-section-title">6. Shablon</div>
               <v-select v-model="templateId" :items="templates"
                 item-title="name" item-value="id"
                 label="Shablon tanlang" variant="outlined" density="comfortable">
@@ -231,13 +250,38 @@ const reqNum = v => (!!v && String(v).trim() !== '') || 'Raqam kiritilishi shart
             </div>
           </div>
 
-          <!-- Matn -->
-          <div class="form-card" style="margin-bottom:16px;">
+          <!-- Hujjat matni -->
+          <div class="form-card" style="margin-bottom:14px;">
             <div class="form-section">
-              <div class="form-section-title">{{ showLeaderField ? (templates.length > 1 ? '7' : '6') : (templates.length > 1 ? '6' : '5') }}. Hujjat matni</div>
+              <div class="form-section-title">{{ templates.length > 1 ? '7' : '6' }}. Hujjat matni</div>
               <v-textarea v-model="textContent" label="Matn" variant="outlined"
                 rows="7" auto-grow :rules="[req]"
                 hint="Matn shablondagi ${TEXT} joyiga yoziladi" persistent-hint />
+            </div>
+          </div>
+
+          <!-- Qo'shimcha qabul qiluvchi (ixtiyoriy) -->
+          <div class="form-card" style="margin-bottom:16px;">
+            <div class="form-section">
+              <div class="form-section-title" style="display:flex;align-items:center;gap:8px;">
+                {{ templates.length > 1 ? '8' : '7' }}. Qo'shimcha qabul qiluvchi
+                <v-chip size="x-small" color="secondary" variant="tonal">ixtiyoriy</v-chip>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">
+                Shablondagi
+                <code style="background:#EFF6FF;color:#1D4ED8;padding:1px 5px;border-radius:4px;">${MANUAL_ORG}</code>,
+                <code style="background:#EFF6FF;color:#1D4ED8;padding:1px 5px;border-radius:4px;">${MANUAL_POSITION}</code>,
+                <code style="background:#EFF6FF;color:#1D4ED8;padding:1px 5px;border-radius:4px;">${MANUAL_NAME}</code>
+                joylari uchun
+              </div>
+              <v-text-field v-model="manualOrg"
+                label="Boshqarma nomi" variant="outlined" density="comfortable" class="mb-3" />
+              <v-text-field v-model="manualPosition"
+                label="Rahbar lavozimi" variant="outlined" density="comfortable" class="mb-3" />
+              <v-text-field v-model="manualName"
+                label="Rahbar F.I.Sh. (Familiya Ism Otasining-ismi)"
+                variant="outlined" density="comfortable"
+                hint="Avtomatik qisqartiriladi: A.A. Familiya" persistent-hint />
             </div>
           </div>
 

@@ -18,17 +18,20 @@ class DocumentController extends Controller
     /*
      * Shablonda ishlatiladigan placeholder lar:
      *
-     * ${DOC_NUMBER}          — Hujjat raqami (masalan: АТ/125)
-     * ${DATE}                — Sana (masalan: 13 may 2026 yil)
+     * ${DOC_NUMBER}          — Hujjat indeksi (masalan: АТ/)
+     * ${DATE}                — Sana (masalan: 13.05.2026-yil)
      * ${RECIPIENT_ORG}       — Tashkilot nomi
-     * ${RECIPIENT_POSITION}  — Rahbar lavozimi (faqat yuqori turuvchida)
-     * ${RECIPIENT_NAME}      — Rahbar FISH (faqat yuqori turuvchida)
-     * ${GREETING}            — "Hurmatli, [FISH]!" (faqat yuqori turuvchida)
+     * ${RECIPIENT_POSITION}  — Rahbar lavozimi
+     * ${RECIPIENT_NAME}      — Rahbar qisqartma FISH (masalan: A.A. Hamidov)
+     * ${GREETING}            — Hurmatli, Ism Otasining-ismi! (masalan: Hurmatli, Akmal Anvarovich!)
      * ${SIGNATORY_POSITION}  — Imzolovchi lavozimi
      * ${SIGNATORY_NAME}      — Imzolovchi FISH
      * ${EXECUTOR_NAME}       — Ijrochi (bo'lim rahbari FISH)
      * ${EXECUTOR_PHONE}      — Ichki telefon
      * ${TEXT}                — Hujjat asosiy matni
+     * ${MANUAL_ORG}          — Qo'lda: boshqarma nomi
+     * ${MANUAL_POSITION}     — Qo'lda: rahbar lavozimi
+     * ${MANUAL_NAME}         — Qo'lda: rahbar qisqartma FISH
      */
 
     public function generate(Request $request): StreamedResponse
@@ -37,17 +40,21 @@ class DocumentController extends Controller
             'department_id'          => 'required|exists:departments,id',
             'organization_id'        => 'required|exists:organizations,id',
             'organization_leader_id' => 'nullable|exists:organization_leaders,id',
+            'recipient_position'     => 'nullable|string|max:255',
+            'recipient_name'         => 'nullable|string|max:255',
             'signatory_id'           => 'required|exists:signatories,id',
-            'document_number'        => 'required|string|max:50',
+            'template_id'            => 'nullable|exists:document_templates,id',
             'document_date'          => 'required|date',
             'text_content'           => 'required|string',
-            'template_id'            => 'nullable|exists:document_templates,id',
+            'manual_org'             => 'nullable|string|max:255',
+            'manual_position'        => 'nullable|string|max:255',
+            'manual_name'            => 'nullable|string|max:255',
         ]);
 
-        $department = Department::findOrFail($data['department_id']);
+        $department  = Department::findOrFail($data['department_id']);
         $organization = Organization::findOrFail($data['organization_id']);
-        $signatory = Signatory::findOrFail($data['signatory_id']);
-        $leader = isset($data['organization_leader_id'])
+        $signatory   = Signatory::findOrFail($data['signatory_id']);
+        $leader      = isset($data['organization_leader_id'])
             ? OrganizationLeader::find($data['organization_leader_id'])
             : null;
 
@@ -66,25 +73,44 @@ class DocumentController extends Controller
             abort(422, 'Shablon fayli topilmadi. Qaytadan yuklang.');
         }
 
+        // Qabul qiluvchi ma'lumotlari
+        if ($leader) {
+            $recipientPosition = $leader->position;
+            $recipientName     = $this->abbreviateName($leader->full_name);
+            $greeting          = 'Hurmatli, ' . $this->getGreetingName($leader->full_name) . '!';
+        } else {
+            $recipientPosition = $data['recipient_position'] ?? '';
+            $recipientFullName = $data['recipient_name'] ?? '';
+            $recipientName     = $recipientFullName ? $this->abbreviateName($recipientFullName) : '';
+            $greeting          = $recipientFullName
+                ? 'Hurmatli, ' . $this->getGreetingName($recipientFullName) . '!'
+                : '';
+        }
+
+        // Qo'lda yoziladigan blok
+        $manualFullName = $data['manual_name'] ?? '';
+        $manualName     = $manualFullName ? $this->abbreviateName($manualFullName) : '';
+
         // Matnni Gemini bilan tuzatish
         $correctedText = $this->correctWithGemini($data['text_content']);
 
-        // Placeholder qiymatlar
-        $fullDocNumber = $department->index_code . $data['document_number'];
         $formattedDate = $this->formatDateUzbek($data['document_date']);
 
         $values = [
-            'DOC_NUMBER'          => $fullDocNumber,
+            'DOC_NUMBER'          => $department->index_code,
             'DATE'                => $formattedDate,
             'RECIPIENT_ORG'       => $organization->name,
-            'RECIPIENT_POSITION'  => $leader?->position ?? '',
-            'RECIPIENT_NAME'      => $leader?->full_name ?? '',
-            'GREETING'            => $leader ? 'Hurmatli, ' . $leader->full_name . '!' : '',
+            'RECIPIENT_POSITION'  => $recipientPosition,
+            'RECIPIENT_NAME'      => $recipientName,
+            'GREETING'            => $greeting,
             'SIGNATORY_POSITION'  => $signatory->position,
             'SIGNATORY_NAME'      => $signatory->full_name,
             'EXECUTOR_NAME'       => $department->head_name,
             'EXECUTOR_PHONE'      => $department->head_phone ?? '',
             'TEXT'                => $correctedText,
+            'MANUAL_ORG'          => $data['manual_org'] ?? '',
+            'MANUAL_POSITION'     => $data['manual_position'] ?? '',
+            'MANUAL_NAME'         => $manualName,
         ];
 
         // Vaqtinchalik fayl yaratish
@@ -94,7 +120,6 @@ class DocumentController extends Controller
         $processor = new TemplateProcessor($tempFile);
 
         foreach ($values as $key => $value) {
-            // Ko'p qatorli matn uchun Word line break
             $value = str_replace(
                 ["\r\n", "\r", "\n"],
                 '</w:t><w:br/><w:t xml:space="preserve">',
@@ -105,7 +130,7 @@ class DocumentController extends Controller
 
         $processor->saveAs($tempFile);
 
-        $filename = 'hujjat_' . preg_replace('/[\/\\\\]/', '-', $fullDocNumber) . '_' . date('Ymd') . '.docx';
+        $filename = 'hujjat_' . preg_replace('/[\/\\\\]/', '-', $department->index_code) . date('Ymd') . '.docx';
 
         return response()->streamDownload(function () use ($tempFile) {
             readfile($tempFile);
@@ -113,6 +138,31 @@ class DocumentController extends Controller
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         ]);
+    }
+
+    // "Familiya Ism Otasining-ismi" -> "I.O. Familiya"
+    private function abbreviateName(string $fullName): string
+    {
+        $parts = preg_split('/\s+/', trim($fullName));
+        if (count($parts) < 2) return $fullName;
+
+        $lastName       = $parts[0];
+        $firstInitial   = mb_strtoupper(mb_substr($parts[1], 0, 1)) . '.';
+        $patronymicInit = isset($parts[2]) ? mb_strtoupper(mb_substr($parts[2], 0, 1)) . '.' : '';
+
+        return $firstInitial . $patronymicInit . ' ' . $lastName;
+    }
+
+    // "Familiya Ism Otasining-ismi" -> "Ism Otasining-ismi" (greeting uchun)
+    private function getGreetingName(string $fullName): string
+    {
+        $parts = preg_split('/\s+/', trim($fullName));
+        if (count($parts) < 2) return $fullName;
+
+        $firstName  = $parts[1];
+        $patronymic = $parts[2] ?? '';
+
+        return trim($firstName . ' ' . $patronymic);
     }
 
     private function correctWithGemini(string $text): string
@@ -146,16 +196,9 @@ class DocumentController extends Controller
         return $text;
     }
 
+    // "13.05.2026-yil" formatida sana
     private function formatDateUzbek(string $date): string
     {
-        $months = [
-            1 => 'yanvar', 2 => 'fevral', 3 => 'mart',
-            4 => 'aprel', 5 => 'may', 6 => 'iyun',
-            7 => 'iyul', 8 => 'avgust', 9 => 'sentabr',
-            10 => 'oktabr', 11 => 'noyabr', 12 => 'dekabr',
-        ];
-        $ts = strtotime($date);
-
-        return date('d', $ts) . ' ' . $months[(int) date('n', $ts)] . ' ' . date('Y', $ts) . ' yil';
+        return date('d.m.Y', strtotime($date)) . '-yil';
     }
 }
