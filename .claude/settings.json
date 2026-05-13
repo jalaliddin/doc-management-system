@@ -21,7 +21,8 @@
       "Bash(curl -s -X POST http://localhost:8000/api/admin/departments -H 'Content-Type: application/json' -d '{\"name\":\"Unauthorized\"}')",
       "Bash(curl -s -X POST http://localhost:8000/api/admin/departments -H 'Content-Type: application/json' -d '{\"name\":\"Unauthorized\"}' -w '\\\\nHTTP Status: %{http_code}')",
       "Bash(curl -s -X POST http://localhost:8000/api/admin/departments -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"name\":\"Unauthorized\"}' -w '\\\\nHTTP Status: %{http_code}')",
-      "Bash(chmod +x /home/eversoft/Projects/hujjat.urtg.uz/docker/entrypoint.sh)"
+      "Bash(chmod +x /home/eversoft/Projects/hujjat.urtg.uz/docker/entrypoint.sh)",
+      "Bash(docker compose *)"
     ]
   }
 }

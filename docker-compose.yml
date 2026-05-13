@@ -16,7 +16,8 @@ services:
       context: ./backend
     container_name: urtg_php
     restart: unless-stopped
-    env_file: .env.docker
+    volumes:
+      - ./.env.docker:/var/www/html/.env:ro
     depends_on:
       - db
 
