@@ -27,19 +27,36 @@ urganchtransgaz/
 ├── docker/
 │   └── nginx/
 │       └── app.conf        # Nginx konfiguratsiyasi
-├── docker-compose.yml      # Docker Compose (production)
-├── .env.docker             # Docker environment o'zgaruvchilari
+├── docker-compose.yml      # Docker Compose
+├── .env                    # Lokal port sozlamasi (APP_PORT=8093)
+├── .env.docker             # Laravel/PHP environment o'zgaruvchilari
 └── api.http                # API test fayli (VS Code REST Client)
 ```
 
 ---
 
-## Docker orqali ishga tushurish (VPS)
+## Port sozlamasi
+
+| Muhit | Manzil | Qanday ishlaydi |
+|-------|--------|-----------------|
+| **Lokal** | `http://localhost:8093` | `.env` da `APP_PORT=8093` |
+| **VPS / Domain** | `http://hujjat.urtg.uz` | `.env` yo'q → default port 80 |
+
+`.env` fayli faqat lokal ishlab chiqish uchun (`.gitignore` ga qo'shing):
+```env
+APP_PORT=8093
+```
+
+VPS da bu fayl bo'lmasligi kerak — Docker Compose `APP_PORT` topilmasa port **80** ishlatadi.
+
+---
+
+## Docker orqali ishga tushurish
 
 ### Talablar
 - Docker Engine 24+
 - Docker Compose v2+
-- Port **8093** ochiq bo'lishi kerak
+- **VPS:** port 80 ochiq | **Lokal:** port 8093 ochiq
 
 ### 1. Repozitoriyani klonlash
 
@@ -51,7 +68,6 @@ cd /var/www/hujjat
 ### 2. Environment sozlash
 
 ```bash
-# .env.docker faylini ko'rib chiqing va kerakli qiymatlarni o'zgartiring
 nano .env.docker
 ```
 
@@ -60,19 +76,17 @@ Muhim o'zgaruvchilar:
 APP_KEY=base64:...       # php artisan key:generate bilan yangilang
 DB_PASSWORD=root         # Ishonchli parol kiriting
 GEMINI_API_KEY=AIza...   # Gemini API kalitini kiriting (ixtiyoriy)
-APP_URL=http://hujjat.urtg.uz:8093
+APP_URL=http://hujjat.urtg.uz
 ```
 
 ### 3. Konteynerlarni qurish va ishga tushurish
 
 ```bash
-# Barcha servislarni qurish va ishga tushurish
 docker compose up -d --build
 
 # Birinchi marta: ma'lumotlar bazasini sozlash
 docker compose run --rm migrate
 
-# Loglarni kuzatish
 docker compose logs -f
 ```
 
@@ -82,12 +96,14 @@ docker compose logs -f
 # Servislar holati
 docker compose ps
 
-# Ilovaga kirish
+# Lokal tekshirish
 curl http://localhost:8093
-# yoki brauzerda: http://hujjat.urtg.uz:8093
+# VPS da
+curl http://hujjat.urtg.uz
 ```
 
-**Admin panel:** `http://hujjat.urtg.uz:8093/admin/login`
+**Admin panel (VPS):** `http://hujjat.urtg.uz/admin/login`  
+**Admin panel (lokal):** `http://localhost:8093/admin/login`
 - Login: `admin`
 - Parol: `Admin@2024`
 
