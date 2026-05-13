@@ -33,7 +33,11 @@ const snackbarText  = ref('')
 const snackbarColor = ref('error')
 const formRef       = ref(null)
 
-const filteredOrgs = computed(() => organizations.value.filter(o => o.type === orgType.value))
+const filteredOrgs       = computed(() => organizations.value.filter(o => o.type === orgType.value))
+// Quyi/boshqa: faqat bir nechta rahbar bo'lsa dropdown ko'rsatiladi
+const showLeaderDropdown = computed(() =>
+  orgType.value === 'yuqori' || (orgType.value !== 'yuqori' && leaders.value.length > 1)
+)
 
 watch(orgType, () => {
   orgId.value = null
@@ -180,8 +184,8 @@ const req = v => !!v || 'Majburiy maydon'
                 :rules="[req]" />
             </div>
 
-            <!-- Barcha tashkilot turlarida rahbar dropdown -->
-            <div class="form-section">
+            <!-- Yuqori: majburiy dropdown; Quyi/boshqa: faqat bir nechta rahbar bo'lsa -->
+            <div v-if="showLeaderDropdown" class="form-section">
               <div class="form-section-title">3. Qabul qiluvchi rahbar</div>
               <v-select v-model="leaderId" :items="leaders"
                 :item-title="i => `${i.position} — ${i.full_name}`"
